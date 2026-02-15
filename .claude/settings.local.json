@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.linkedin.com)",
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(python:*)",
+      "Bash(vercel whoami:*)",
+      "Bash(test:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_W2NItKVS7EMz@ep-fancy-sky-aihc3vsx-pooler.c-4.us-east-1.aws.neon.tech/bar-stock?sslmode=require\" npx prisma migrate deploy:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_W2NItKVS7EMz@ep-fancy-sky-aihc3vsx-pooler.c-4.us-east-1.aws.neon.tech/bar-stock?sslmode=require\" npx tsx:*)",
+      "Bash(vercel link:*)",
+      "Bash(vercel env add:*)",
+      "Bash(vercel:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_W2NItKVS7EMz@ep-fancy-sky-aihc3vsx-pooler.c-4.us-east-1.aws.neon.tech/bar-stock?sslmode=require\" npx prisma migrate dev:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_W2NItKVS7EMz@ep-fancy-sky-aihc3vsx-pooler.c-4.us-east-1.aws.neon.tech/bar-stock?sslmode=require\" npx prisma db execute --stdin <<'SQL'\nINSERT INTO \"Setting\" \\(key, value\\) VALUES \\('currency', '\\) ON CONFLICT \\(key\\) DO NOTHING;\nSQL)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"Yes, reset it\" DATABASE_URL=\"postgresql://neondb_owner:npg_W2NItKVS7EMz@ep-fancy-sky-aihc3vsx-pooler.c-4.us-east-1.aws.neon.tech/bar-stock?sslmode=require\" npx prisma migrate reset:*)"
+    ]
+  }
+}
