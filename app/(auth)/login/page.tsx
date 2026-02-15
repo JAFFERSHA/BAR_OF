@@ -46,7 +46,7 @@ export default function LoginPage() {
         )}
         <SubmitButton />
         <div className="muted" style={{ marginTop: 12, fontSize: 13 }}>
-          Demo users: owner@bar.test / manager@bar.test / staff@bar.test (password: Passw0rd!)
+        
         </div>
       </form>
     </div>
