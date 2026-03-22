@@ -7,9 +7,9 @@ import { purchaseSchema } from '@/lib/validation';
 import { NotificationType, Role } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
-export async function createPurchase(_prev: string | null, formData: FormData) {
+export async function createPurchase(_prev: unknown, formData: FormData): Promise<{ purchaseId: string } | { error: string }> {
   const user = await requireUser();
-  if (user.role !== Role.OWNER && user.role !== Role.MANAGER) return 'Access denied.';
+  if (user.role !== Role.OWNER && user.role !== Role.MANAGER) return { error: 'Access denied.' };
   const itemsPayload = formData.get('items');
   const supplierId = formData.get('supplierId');
 
@@ -18,7 +18,7 @@ export async function createPurchase(_prev: string | null, formData: FormData) {
     items: typeof itemsPayload === 'string' ? JSON.parse(itemsPayload) : []
   });
 
-  if (!parsed.success) return 'Please add at least one line item.';
+  if (!parsed.success) return { error: 'Please add at least one valid line item.' };
 
   const total = parsed.data.items.reduce((sum, item) => sum + item.quantity * item.costPrice, 0);
 
@@ -60,5 +60,7 @@ export async function createPurchase(_prev: string | null, formData: FormData) {
 
   revalidatePath('/purchase');
   revalidatePath('/stock');
-  return null;
+
+  if (!purchaseId) return { error: 'Purchase could not be created.' };
+  return { purchaseId };
 }

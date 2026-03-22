@@ -37,6 +37,8 @@ export const purchaseSchema = z.object({
 
 export const saleSchema = z.object({
   customer: z.string().min(1),
+  customerPhone: z.string().optional().default(''),
+  customerEmail: z.string().email().optional().or(z.literal('')).default(''),
   taxRate: z.coerce.number().min(0).max(1),
   items: z
     .array(

@@ -2,6 +2,8 @@
 
 import { createPurchase } from './actions';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import type { Product, Supplier } from '@prisma/client';
 
 type Props = {
@@ -17,8 +19,8 @@ export function PurchaseForm({ products, suppliers, currency }: Props) {
     return <div className="muted">Add at least one product and supplier to log purchases.</div>;
   }
 
+  const router = useRouter();
   const [items, setItems] = useState<Line[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -38,19 +40,18 @@ export function PurchaseForm({ products, suppliers, currency }: Props) {
     const form = formRef.current;
     if (!form) return;
     if (items.length === 0) {
-      setError('Add at least one item.');
+      toast.error('Add at least one item.');
       return;
     }
     const formData = new FormData(form);
     formData.set('items', JSON.stringify(items));
     startTransition(async () => {
       const result = await createPurchase(null, formData);
-      if (result) {
-        setError(result);
-      } else {
-        setError(null);
-        setItems([{ productId: products[0]?.id || '', quantity: 1, costPrice: Number(products[0]?.costPrice) || 1 }]);
-        form.reset();
+      if (result && 'error' in result) {
+        toast.error(result.error);
+      } else if (result && 'purchaseId' in result) {
+        toast.success('Purchase logged successfully!');
+        router.push('/purchase');
       }
     });
   };
@@ -168,11 +169,6 @@ export function PurchaseForm({ products, suppliers, currency }: Props) {
         </div>
       </div>
 
-      {error && (
-        <div className="muted danger-text" style={{ marginTop: 10 }}>
-          {error}
-        </div>
-      )}
       <div style={{ marginTop: 12 }}>
         <button className="button" type="submit" disabled={pending}>
           {pending ? 'Saving...' : 'Save purchase'}
