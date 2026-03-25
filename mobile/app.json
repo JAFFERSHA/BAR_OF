@@ -36,13 +36,7 @@
     ],
     "scheme": "bar-manager",
     "extra": {
-      "apiBaseUrl": "$EXPO_PUBLIC_API_BASE_URL",
-      "eas": {
-        "projectId": "your-eas-project-id"
-      }
-    },
-    "updates": {
-      "url": "https://u.expo.dev/your-eas-project-id"
+      "apiBaseUrl": "$EXPO_PUBLIC_API_BASE_URL"
     }
   }
 }
