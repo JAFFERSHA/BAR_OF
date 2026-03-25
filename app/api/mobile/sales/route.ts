@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     orderBy: { createdAt: 'desc' },
     take: 20,
     include: {
+      user: { select: { name: true } },
       items: { include: { product: { select: { name: true, sku: true } } } }
     }
   });

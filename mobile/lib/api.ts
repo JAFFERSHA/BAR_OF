@@ -1,8 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
-import Constants from 'expo-constants';
 
+// Supports both EAS env vars (EXPO_PUBLIC_*) and app.json extra for local dev
 const BASE_URL =
-  (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ?? 'http://localhost:3000';
+  process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
 
 async function getToken(): Promise<string | null> {
   return SecureStore.getItemAsync('auth_token');
@@ -145,6 +145,7 @@ export type Purchase = {
   createdAt: string;
   total: number;
   supplier: { name: string };
+  user: { name: string };
   items: PurchaseItem[];
 };
 
@@ -163,6 +164,7 @@ export type Sale = {
   subtotal: number;
   tax: number;
   total: number;
+  user: { name: string };
   items: SaleItem[];
 };
 

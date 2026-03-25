@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
     take: 20,
     include: {
       supplier: { select: { name: true } },
+      user: { select: { name: true } },
       items: { include: { product: { select: { name: true, sku: true } } } }
     }
   });

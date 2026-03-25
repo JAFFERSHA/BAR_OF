@@ -3,6 +3,9 @@
     "name": "Bar Manager",
     "slug": "bar-manager",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -33,7 +36,13 @@
     ],
     "scheme": "bar-manager",
     "extra": {
-      "apiBaseUrl": "http://localhost:3000"
+      "apiBaseUrl": "$EXPO_PUBLIC_API_BASE_URL",
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/your-eas-project-id"
     }
   }
 }
