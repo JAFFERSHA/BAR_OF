@@ -27,11 +27,9 @@ on:
       platform:
         description: 'Platform to build'
         required: true
-        default: 'all'
+        default: 'android'
         type: choice
         options:
-          - all
-          - ios
           - android
 
 jobs:
@@ -65,7 +63,7 @@ jobs:
         if: github.event_name != 'workflow_dispatch'
         run: |
           eas build \
-            --platform all \
+            --platform android \
             --profile development \
             --non-interactive \
             --no-wait
