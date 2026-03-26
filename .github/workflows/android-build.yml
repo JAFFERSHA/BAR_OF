@@ -1,0 +1,70 @@
+name: Android Build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'mobile/**'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'mobile/**'
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'API Base URL'
+        required: false
+        default: 'https://bar-of.vercel.app'
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Expo Prebuild (generate Android folder)
+        run: npx expo prebuild --platform android --clean
+        env:
+          EXPO_PUBLIC_API_BASE_URL: ${{ github.event.inputs.api_url || secrets.API_BASE_URL || 'https://bar-of.vercel.app' }}
+
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+
+      - name: Build APK
+        run: ./gradlew assembleRelease --no-daemon
+        working-directory: mobile/android
+        env:
+          GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx4g'
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: bar-manager-release-${{ github.run_number }}
+          path: mobile/android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
