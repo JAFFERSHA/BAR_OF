@@ -7,12 +7,14 @@ on:
       - master
     paths:
       - 'mobile/**'
+      - '.github/workflows/android-build.yml'
   pull_request:
     branches:
       - main
       - master
     paths:
       - 'mobile/**'
+      - '.github/workflows/android-build.yml'
   workflow_dispatch:
     inputs:
       api_url:
