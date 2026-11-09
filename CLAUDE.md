@@ -32,7 +32,7 @@ Staff use it on the web and through an Expo mobile app.
 
 ## Gates
 1. `npx tsc --noEmit` — currently clean
-2. Lint — **broken**: `npm run lint` runs `next lint`, which was removed in Next 16. Mark `SKIPPED (next lint removed in Next 16)`; don't fix unasked.
+2. `npm run lint` (`eslint .`, flat config in `eslint.config.mjs`) — 0 errors.
 3. `npm run build`
 No automated test suite exists.
 
@@ -46,3 +46,5 @@ Login as OWNER → add purchase → stock goes up → add sale → stock goes do
 ## Gotchas
 - Stock must never go negative from a sale; purchases/sales should update stock in one transaction.
 - When changing an `/api/mobile/*` response, check `mobile/` for the code that reads it.
+
+- Login/register/OTP/test endpoints are rate-limited via `lib/rate-limit.ts` (table `RateLimit`, Postgres counter, fails open). New public endpoints that cost money or guess secrets should use it.

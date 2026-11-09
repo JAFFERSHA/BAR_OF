@@ -1,30 +1,22 @@
 "use client";
 
 import { createSale } from './actions';
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useMemo, useRef, useState, useTransition } from 'react';
 import type { Product } from '@prisma/client';
 
 type Line = { productId: string; quantity: number; unitPrice: number };
 
 export function SaleForm({ products, currency }: { products: Product[]; currency: string }) {
-  if (products.length === 0) {
-    return <div className="muted">Add products first before creating a bill.</div>;
-  }
-
-  const [items, setItems] = useState<Line[]>([]);
+  const [items, setItems] = useState<Line[]>(() =>
+    products[0]
+      ? [{ productId: products[0].id, quantity: 1, unitPrice: Number(products[0].salePrice) || 1 }]
+      : []
+  );
   const [customer, setCustomer] = useState('Walk-in');
   const [taxRate, setTaxRate] = useState(0.07);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (items.length === 0 && products[0]) {
-      setItems([
-        { productId: products[0].id, quantity: 1, unitPrice: Number(products[0].salePrice) || 1 }
-      ]);
-    }
-  }, [products]);
 
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
@@ -58,6 +50,10 @@ export function SaleForm({ products, currency }: { products: Product[]; currency
       }
     });
   };
+
+  if (products.length === 0) {
+    return <div className="muted">Add products first before creating a bill.</div>;
+  }
 
   return (
     <form ref={formRef} onSubmit={handleSubmit}>

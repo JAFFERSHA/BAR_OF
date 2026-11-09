@@ -1,7 +1,7 @@
 "use client";
 
 import { createPurchase } from './actions';
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useMemo, useRef, useState, useTransition } from 'react';
 import type { Product, Supplier } from '@prisma/client';
 
 type Props = {
@@ -13,20 +13,14 @@ type Props = {
 type Line = { productId: string; quantity: number; costPrice: number };
 
 export function PurchaseForm({ products, suppliers, currency }: Props) {
-  if (products.length === 0 || suppliers.length === 0) {
-    return <div className="muted">Add at least one product and supplier to log purchases.</div>;
-  }
-
-  const [items, setItems] = useState<Line[]>([]);
+  const [items, setItems] = useState<Line[]>(() =>
+    products[0]
+      ? [{ productId: products[0].id, quantity: 1, costPrice: Number(products[0].costPrice) || 1 }]
+      : []
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (items.length === 0 && products[0]) {
-      setItems([{ productId: products[0].id, quantity: 1, costPrice: Number(products[0].costPrice) || 1 }]);
-    }
-  }, [products]);
 
   const total = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity * item.costPrice, 0),
@@ -54,6 +48,10 @@ export function PurchaseForm({ products, suppliers, currency }: Props) {
       }
     });
   };
+
+  if (products.length === 0 || suppliers.length === 0) {
+    return <div className="muted">Add at least one product and supplier to log purchases.</div>;
+  }
 
   return (
     <form ref={formRef} onSubmit={handleSubmit}>

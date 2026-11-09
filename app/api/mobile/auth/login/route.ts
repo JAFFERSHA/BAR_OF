@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { createMobileToken } from '@/lib/mobile-session';
+import { getClientIp, rateLimit, tooManyMessage } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   let body: { identifier?: unknown; password?: unknown } | null = null;
@@ -14,6 +15,17 @@ export async function POST(req: NextRequest) {
 
   if (!identifier || !password) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
+  }
+
+  const ip = getClientIp(req.headers);
+  const idKey = String(identifier).trim().toLowerCase();
+  const byIp = await rateLimit(`login:ip:${ip}`, 30, 15 * 60);
+  const byId = await rateLimit(`login:${idKey}:${ip}`, 8, 15 * 60);
+  if (!byIp.ok || !byId.ok) {
+    return NextResponse.json(
+      { error: tooManyMessage(Math.max(byIp.retryAfterSec, byId.retryAfterSec)) },
+      { status: 429 }
+    );
   }
 
   const user = await prisma.user.findFirst({

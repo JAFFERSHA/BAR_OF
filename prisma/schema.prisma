@@ -114,3 +114,10 @@ model Setting {
   key   String @id
   value String
 }
+
+// Fixed-window counters for rate limiting (see lib/rate-limit.ts)
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}
