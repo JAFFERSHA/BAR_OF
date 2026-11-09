@@ -4,7 +4,12 @@ import { prisma } from '@/lib/prisma';
 import { createMobileToken } from '@/lib/mobile-session';
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  let body: { identifier?: unknown; password?: unknown } | null = null;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
+  }
   const { identifier, password } = body ?? {};
 
   if (!identifier || !password) {

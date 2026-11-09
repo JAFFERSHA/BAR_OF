@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireMobileUser } from '@/lib/mobile-session';
-import { notify } from '@/lib/notifier';
+import { recordSale, SaleError } from '@/lib/sales';
 import { saleSchema } from '@/lib/validation';
-import { NotificationType } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
   const user = await requireMobileUser(req);
@@ -33,62 +32,24 @@ export async function POST(req: NextRequest) {
   const user = await requireMobileUser(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const body = await req.json();
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
   const parsed = saleSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: 'Validation failed', issues: parsed.error.issues }, { status: 400 });
   }
 
-  const subtotal = parsed.data.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const tax = subtotal * parsed.data.taxRate;
-  const total = subtotal + tax;
-  let saleId: string | null = null;
-  const lowStockMessages: { message: string; productId: string }[] = [];
-
-  await prisma.$transaction(async (tx) => {
-    const sale = await tx.sale.create({
-      data: {
-        customer: parsed.data.customer,
-        subtotal,
-        tax,
-        total,
-        userId: user.id,
-        items: {
-          create: parsed.data.items.map((i) => ({
-            productId: i.productId,
-            quantity: i.quantity,
-            unitPrice: i.unitPrice
-          }))
-        }
-      }
-    });
-    saleId = sale.id;
-
-    for (const item of parsed.data.items) {
-      const product = await tx.product.update({
-        where: { id: item.productId },
-        data: { quantity: { decrement: item.quantity } }
-      });
-      if (product.quantity <= product.reorderLevel) {
-        lowStockMessages.push({
-          message: `${product.name} fell below reorder level (${product.quantity}/${product.reorderLevel})`,
-          productId: product.id
-        });
-      }
-    }
-  });
-
-  for (const msg of lowStockMessages) {
-    await notify(NotificationType.STOCK_LOW, msg.message, msg.productId);
+  try {
+    const { saleId, subtotal, tax, total } = await recordSale(user.id, parsed.data);
+    return NextResponse.json({ success: true, saleId, subtotal, tax, total }, { status: 201 });
+  } catch (err) {
+    // e.g. "Not enough stock for X (only 3 left)" — the mobile app shows this message.
+    if (err instanceof SaleError) return NextResponse.json({ error: err.message }, { status: 409 });
+    throw err;
   }
-
-  if (saleId) {
-    await notify(
-      NotificationType.SALE_BILL,
-      `Bill ${saleId} issued for ${parsed.data.customer} - ${total.toFixed(2)}`,
-      undefined
-    );
-  }
-
-  return NextResponse.json({ success: true, saleId, subtotal, tax, total }, { status: 201 });
 }

@@ -13,10 +13,14 @@ export async function createPurchase(_prev: string | null, formData: FormData) {
   const itemsPayload = formData.get('items');
   const supplierId = formData.get('supplierId');
 
-  const parsed = purchaseSchema.safeParse({
-    supplierId,
-    items: typeof itemsPayload === 'string' ? JSON.parse(itemsPayload) : []
-  });
+  let items: unknown = [];
+  try {
+    items = typeof itemsPayload === 'string' ? JSON.parse(itemsPayload) : [];
+  } catch {
+    return 'Please add at least one line item.';
+  }
+
+  const parsed = purchaseSchema.safeParse({ supplierId, items });
 
   if (!parsed.success) return 'Please add at least one line item.';
 
